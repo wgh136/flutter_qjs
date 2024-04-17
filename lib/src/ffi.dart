@@ -105,13 +105,13 @@ class JSTag {
   static const FLOAT64 = 7;
 }
 
-abstract class JSValue extends Opaque {}
+abstract base class JSValue extends Opaque {}
 
-abstract class JSContext extends Opaque {}
+abstract base class JSContext extends Opaque {}
 
-abstract class JSRuntime extends Opaque {}
+abstract base class JSRuntime extends Opaque {}
 
-abstract class JSPropertyEnum extends Opaque {}
+abstract base class JSPropertyEnum extends Opaque {}
 
 final DynamicLibrary _qjsLib = Platform.environment['FLUTTER_TEST'] == 'true'
     ? (Platform.isWindows
