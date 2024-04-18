@@ -205,10 +205,10 @@ packages:
     dependency: "direct main"
     description:
       name: ffi
-      sha256: "35d0f481d939de0d640b3db9a7aa36a52cd22054a798a73b4f50bdad5ce12678"
+      sha256: "493f37e7df1804778ff3a53bd691d8692ddf69702cf4c1c1096a2e41b4779e21"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.2"
+    version: "2.1.2"
   file:
     dependency: transitive
     description:
@@ -766,5 +766,5 @@ packages:
     source: hosted
     version: "2.1.1"
 sdks:
-  dart: ">=3.3.0-91.0.dev <4.0.0"
+  dart: ">=3.3.0-279.1.beta <4.0.0"
   flutter: ">=3.0.0"
