@@ -11,6 +11,8 @@ part of '../flutter_qjs.dart';
 abstract class JSInvokable extends JSRef {
   dynamic invoke(List args, [dynamic thisVal]);
 
+  dynamic call(List args) => invoke(args);
+
   static dynamic _wrap(dynamic func) {
     return func is JSInvokable
         ? func
@@ -188,6 +190,9 @@ class _JSFunction extends _JSObject implements JSInvokable, _IsolateEncodable {
   Map _encode() {
     return IsolateFunction._new(this)._encode();
   }
+
+  @override
+  call(List<dynamic> args) => invoke(args);
 }
 
 /// Dart function wrapper for isolate

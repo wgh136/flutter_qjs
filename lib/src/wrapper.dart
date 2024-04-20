@@ -197,7 +197,8 @@ dynamic _jsToDart(Pointer<JSContext> ctx, Pointer<JSValue> val,
           },
           (e) {
             JSRef.dupRecursive(e);
-            if (!completer.isCompleted) completer.completeError(e);
+            // `throw null` is allowed in js
+            if (!completer.isCompleted) completer.completeError(e ?? "null");
           },
         ], jsPromise);
         jsPromise.free();
@@ -227,13 +228,13 @@ dynamic _jsToDart(Pointer<JSContext> ctx, Pointer<JSValue> val,
         }
         final len = plen.value;
         malloc.free(plen);
-        final ret = Map();
+        final ret = Map<String, dynamic>();
         cache[valptr] = ret;
         for (var i = 0; i < len; ++i) {
           final jsAtom = jsPropertyEnumGetAtom(ptab.value, i);
           final jsAtomValue = jsAtomToValue(ctx, jsAtom);
           final jsProp = jsGetProperty(ctx, val, jsAtom);
-          ret[_jsToDart(ctx, jsAtomValue, cache: cache)] =
+          ret[_jsToDart(ctx, jsAtomValue, cache: cache).toString()] =
               _jsToDart(ctx, jsProp, cache: cache);
           jsFreeValue(ctx, jsAtomValue);
           jsFreeValue(ctx, jsProp);
