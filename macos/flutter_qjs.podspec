@@ -19,7 +19,6 @@ This plugin is a simple js engine for flutter using the `quickjs` project. Plugi
 
   s.platform = :osx, '10.11'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  s.vendored_libraries = 'build/Debug/libffiquickjs.dylib'
   s.prepare_command = 'sh ../cxx/prebuild.sh'
   s.swift_version = '5.0'
 end

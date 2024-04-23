@@ -113,17 +113,21 @@ abstract base class JSRuntime extends Opaque {}
 
 abstract base class JSPropertyEnum extends Opaque {}
 
-final DynamicLibrary _qjsLib = Platform.environment['FLUTTER_TEST'] == 'true'
-    ? (Platform.isWindows
-        ? DynamicLibrary.open('test/build/Debug/ffiquickjs.dll')
-        : Platform.isMacOS
-            ? DynamicLibrary.open('test/build/libffiquickjs.dylib')
-            : DynamicLibrary.open('test/build/libffiquickjs.so'))
-    : (Platform.isWindows
-        ? DynamicLibrary.open('flutter_qjs_plugin.dll')
-        : Platform.isAndroid
-            ? DynamicLibrary.open('libqjs.so')
-            : DynamicLibrary.process());
+final DynamicLibrary _qjsLib = () {
+  if (Platform.isMacOS || Platform.isIOS) {
+    return DynamicLibrary.open('flutter_qjs.framework/flutter_qjs');
+  }
+  if (Platform.isAndroid) {
+    return DynamicLibrary.open('libqjs.so');
+  }
+  if (Platform.isLinux) {
+    return DynamicLibrary.open('libflutter_qjs_plugin.so');
+  }
+  if (Platform.isWindows) {
+    return DynamicLibrary.open('flutter_qjs_plugin.dll');
+  }
+  throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
+}();
 
 /// DLLEXPORT JSValue *jsThrow(JSContext *ctx, JSValue *obj)
 final Pointer<JSValue> Function(
