@@ -14,7 +14,7 @@ This plugin is a simple js engine for flutter using the `quickjs` project. Plugi
   s.author           = { 'ekibun' => 'soekibun@gmail.com' }
   s.source           = { :path => '.' }
   s.compiler_flags = '-DDUMP_LEAKS'
-  s.source_files = ['Classes/**/*', 'cxx/*.{c,cpp}']
+  s.source_files = ['cxx/*.{c,cpp}']
   s.dependency 'FlutterMacOS'
 
   s.platform = :osx, '10.11'

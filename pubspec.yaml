@@ -43,9 +43,9 @@ flutter:
         pluginClass: FlutterQjsPlugin
         package: soko.ekibun.flutter_qjs
       macos:
-        pluginClass: FlutterQjsPlugin
+        ffiPlugin: true
       ios:
-        pluginClass: FlutterQjsPlugin
+        ffiPlugin: true
     # -------------------
 
   # To add assets to your plugin package, add an assets section, like this:
