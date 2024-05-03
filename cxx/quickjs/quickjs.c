@@ -1203,6 +1203,7 @@ static int js_proxy_setPrototypeOf(JSContext *ctx, JSValueConst obj,
 static int js_proxy_isExtensible(JSContext *ctx, JSValueConst obj);
 static int js_proxy_preventExtensions(JSContext *ctx, JSValueConst obj);
 static int js_proxy_isArray(JSContext *ctx, JSValueConst obj);
+static int js_proxy_isMap(JSContext *ctx, JSValueConst obj);
 static int JS_CreateProperty(JSContext *ctx, JSObject *p,
                              JSAtom prop, JSValueConst val,
                              JSValueConst getter, JSValueConst setter,
