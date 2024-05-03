@@ -218,7 +218,20 @@ dynamic _jsToDart(Pointer<JSContext> ctx, Pointer<JSValue> val,
           jsFreeValue(ctx, jsProp);
         }
         return ret;
-      } else {
+      } else if(jsIsMap(ctx, val) != 0) {
+        final map = Map();
+        final jsMap = _JSObject(ctx, val);
+        void callback(key, value) {
+          map[key] = value;
+        };
+        var jsFunc = jsEval(ctx, "(m, callback) => { m.forEach((value, key, _) => { callback(key, value) }) }", "eval", JSEvalFlag.GLOBAL);
+        var func = _jsToDart(ctx, jsFunc) as JSInvokable;
+        jsFreeValue(ctx, jsFunc);
+        func.invoke([jsMap, callback]);
+        jsMap.destroy();
+        func.destroy();
+        return map;
+      } else{
         final ptab = malloc<Pointer<JSPropertyEnum>>();
         final plen = malloc<Uint32>();
         if (jsGetOwnPropertyNames(ctx, ptab, plen, val, -1) != 0) {

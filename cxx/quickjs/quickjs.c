@@ -12148,6 +12148,21 @@ int JS_IsArray(JSContext *ctx, JSValueConst val)
     }
 }
 
+/* return -1 if exception (proxy case) or TRUE/FALSE */
+int JS_IsMap(JSContext *ctx, JSValueConst val)
+{
+    JSObject *p;
+    if (JS_VALUE_GET_TAG(val) == JS_TAG_OBJECT) {
+        p = JS_VALUE_GET_OBJ(val);
+        if (unlikely(p->class_id == JS_CLASS_PROXY))
+            return js_proxy_isMap(ctx, val);
+        else
+            return p->class_id == JS_CLASS_MAP;
+    } else {
+        return FALSE;
+    }
+}
+
 static double js_pow(double a, double b)
 {
     if (unlikely(!isfinite(b)) && fabs(a) == 1) {
@@ -46707,6 +46722,22 @@ static int js_proxy_isArray(JSContext *ctx, JSValueConst obj)
         return -1;
     }
     return JS_IsArray(ctx, s->target);
+}
+
+static int js_proxy_isMap(JSContext *ctx, JSValueConst obj)
+{
+    JSProxyData *s = JS_GetOpaque(obj, JS_CLASS_PROXY);
+    if (!s)
+        return FALSE;
+    if (js_check_stack_overflow(ctx->rt, 0)) {
+        JS_ThrowStackOverflow(ctx);
+        return -1;
+    }
+    if (s->is_revoked) {
+        JS_ThrowTypeErrorRevokedProxy(ctx);
+        return -1;
+    }
+    return JS_IsMap(ctx, s->target);
 }
 
 static const JSClassExoticMethods js_proxy_exotic_methods = {

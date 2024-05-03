@@ -759,6 +759,19 @@ final int Function(
     )>>('jsIsArray')
     .asFunction();
 
+/// int32_t jsIsMap(JSContext *ctx, JSValueConst *val)
+final int Function(
+    Pointer<JSContext> ctx,
+    Pointer<JSValue> val,
+    ) jsIsMap = _qjsLib
+    .lookup<
+    NativeFunction<
+        Int32 Function(
+            Pointer<JSContext>,
+            Pointer<JSValue>,
+            )>>('jsIsMap')
+    .asFunction();
+
 /// DLLEXPORT int32_t jsIsError(JSContext *ctx, JSValueConst *val);
 final int Function(
   Pointer<JSContext> ctx,

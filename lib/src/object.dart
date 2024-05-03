@@ -192,7 +192,7 @@ class _JSFunction extends _JSObject implements JSInvokable, _IsolateEncodable {
   }
 
   @override
-  call(List<dynamic> args) => invoke(args);
+  call(List<dynamic> args, [dynamic thisVal]) => invoke(args, thisVal);
 }
 
 /// Dart function wrapper for isolate
