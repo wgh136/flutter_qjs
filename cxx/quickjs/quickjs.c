@@ -24050,6 +24050,7 @@ static int js_parse_destructuring_element(JSParseState *s, int tok, int is_arg,
         emit_op(s, OP_dup);
     }
     assign_addr = s->cur_func->byte_code.size;
+    label_lvalue = -1;
     if (s->token.val == '{') {
         if (next_token(s))
             return -1;
