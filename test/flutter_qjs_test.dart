@@ -12,6 +12,7 @@ import 'dart:io';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tools/src/base/io.dart';
+import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/platform.dart';
@@ -81,9 +82,25 @@ void main() async {
     if (platform.isWindows) {
       final stdio = Stdio();
       final vs = VisualStudio(
+        fileSystem: const LocalFileSystem(),
+        processManager: const LocalProcessManager(),
+        platform: platform,
+        logger: StdoutLogger(
+          terminal: AnsiTerminal(
+            stdio: stdio,
+            platform: platform,
+          ),
+          stdio: stdio,
+          outputPreferences: OutputPreferences(
+            wrapText: stdio.hasTerminal,
+            showColor: platform.stdoutSupportsAnsi,
+            stdio: stdio,
+          ),
+        ),
+        osUtils: OperatingSystemUtils(
           fileSystem: const LocalFileSystem(),
-          processManager: const LocalProcessManager(),
           platform: platform,
+          processManager: const LocalProcessManager(),
           logger: StdoutLogger(
             terminal: AnsiTerminal(
               stdio: stdio,
@@ -95,7 +112,9 @@ void main() async {
               showColor: platform.stdoutSupportsAnsi,
               stdio: stdio,
             ),
-          ));
+          ),
+        ),
+      );
       cmakePath = vs.cmakePath!;
     }
     final buildDir = './build';

@@ -6,6 +6,7 @@
  * @LastEditTime: 2020-12-02 11:14:35
  */
 import 'dart:ffi';
+import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:isolate';
 import 'package:ffi/ffi.dart';
@@ -155,7 +156,7 @@ final Pointer<JSValue> Function() jsUNDEFINED = _qjsLib
 typedef _JSChannel = Pointer<JSValue> Function(
     Pointer<JSContext> ctx, int method, Pointer<JSValue> argv);
 typedef _JSChannelNative = Pointer<JSValue> Function(
-    Pointer<JSContext> ctx, IntPtr method, Pointer<JSValue> argv);
+    Pointer<JSContext> ctx, Int method, Pointer<JSValue> argv);
 
 /// JSRuntime *jsNewRuntime(JSChannel channel)
 final Pointer<JSRuntime> Function(
@@ -190,7 +191,7 @@ class _RuntimeOpaque {
 
 final Map<Pointer<JSRuntime>, _RuntimeOpaque> runtimeOpaques = Map();
 
-Pointer<JSValue>? channelDispacher(
+Pointer<JSValue> channelDispacher(
   Pointer<JSContext> ctx,
   int type,
   Pointer<JSValue> argv,
@@ -198,7 +199,10 @@ Pointer<JSValue>? channelDispacher(
   final rt = type == JSChannelType.FREE_OBJECT
       ? ctx.cast<JSRuntime>()
       : jsGetRuntime(ctx);
-  return runtimeOpaques[rt]?._channel(ctx, type, argv);
+  if(runtimeOpaques[rt] == null) {
+    return Pointer.fromAddress(0);
+  }
+  return runtimeOpaques[rt]!._channel(ctx, type, argv);
 }
 
 Pointer<JSRuntime> jsNewRuntime(
