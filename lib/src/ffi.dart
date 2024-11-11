@@ -27,9 +27,14 @@ abstract class JSRef {
     _refCount++;
   }
 
+  bool _released = false;
+
   void free() {
     _refCount--;
-    if (_refCount < 0) destroy();
+    if (_refCount < 0 && !_released){
+      _released = true;
+      destroy();
+    }
   }
 
   void destroy();
