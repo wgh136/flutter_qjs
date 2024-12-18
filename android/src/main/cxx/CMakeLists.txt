@@ -13,6 +13,7 @@ set(JNI_LIB_NAME qjs)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/../../../../cxx/quickjs.cmake")
 
+add_link_options("-Wl,--build-id=none")
 add_library( # Sets the name of the library.
              ${JNI_LIB_NAME}
 
@@ -21,8 +22,6 @@ add_library( # Sets the name of the library.
 
              # Provides a relative path to your source file(s).
              ${CXX_LIB_DIR}/ffi.cpp )
-
-add_link_options("-Wl,--build-id=none")
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
