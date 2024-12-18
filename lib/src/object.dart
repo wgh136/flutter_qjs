@@ -150,12 +150,8 @@ class _JSObject extends JSRef {
 }
 
 /// JS function wrapper
-class _JSFunction extends _JSObject implements JSInvokable, _IsolateEncodable, Finalizable {
-  _JSFunction(Pointer<JSContext> ctx, Pointer<JSValue> val) : super(ctx, val) {
-    _finalizer.attach(this, this);
-  }
-
-  static final _finalizer = Finalizer<_JSFunction>((f) => f.free());
+class _JSFunction extends _JSObject implements JSInvokable, _IsolateEncodable {
+  _JSFunction(Pointer<JSContext> ctx, Pointer<JSValue> val) : super(ctx, val);
 
   @override
   invoke(List<dynamic> arguments, [dynamic thisVal]) {
