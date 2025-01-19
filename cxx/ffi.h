@@ -1,4 +1,4 @@
-#include "quickjs/quickjs.h"
+#include "quickjs-ng/quickjs.h"
 
 #ifdef _MSC_VER
 #define DLLEXPORT __declspec(dllexport)

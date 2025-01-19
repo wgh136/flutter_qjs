@@ -10,6 +10,8 @@
 #include <future>
 #include <string.h>
 
+#define JS_BOOL bool
+
 extern "C"
 {
 
@@ -99,8 +101,8 @@ extern "C"
   DLLEXPORT uint32_t jsNewClass(JSContext *ctx, const char *name)
   {
     JSClassID QJSClassId = 0;
-    JS_NewClassID(&QJSClassId);
     JSRuntime *rt = JS_GetRuntime(ctx);
+    JS_NewClassID(rt, &QJSClassId);
     if (!JS_IsRegisteredClass(rt, QJSClassId))
     {
       JSClassDef def{
@@ -312,7 +314,7 @@ extern "C"
 
   DLLEXPORT int32_t jsIsPromise(JSContext *ctx, JSValueConst *val)
   {
-    return JS_IsPromise(ctx, *val);
+    return JS_IsPromise(*val);
   }
 
   DLLEXPORT int32_t jsIsArray(JSContext *ctx, JSValueConst *val)
@@ -322,7 +324,7 @@ extern "C"
 
   DLLEXPORT int32_t jsIsMap(JSContext *ctx, JSValueConst *val)
   {
-    return JS_IsMap(ctx, *val);
+    return JS_IsMap(*val);
   }
 
   DLLEXPORT int32_t jsIsError(JSContext *ctx, JSValueConst *val)

@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 set(CXX_LIB_DIR ${CMAKE_CURRENT_LIST_DIR})
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
+
+project(quickjs LANGUAGES C)
 
 # quickjs
-set(QUICK_JS_LIB_DIR ${CXX_LIB_DIR}/quickjs)
+set(QUICK_JS_LIB_DIR ${CXX_LIB_DIR}/quickjs-ng)
 file (STRINGS "${QUICK_JS_LIB_DIR}/VERSION" QUICKJS_VERSION)
 add_library(quickjs STATIC
     ${QUICK_JS_LIB_DIR}/cutils.c
@@ -13,7 +15,6 @@ add_library(quickjs STATIC
     ${QUICK_JS_LIB_DIR}/libbf.c
 )
 
-project(quickjs LANGUAGES C)
 target_compile_options(quickjs PRIVATE "-DCONFIG_VERSION=\"${QUICKJS_VERSION}\"")
 target_compile_options(quickjs PRIVATE "-DDUMP_LEAKS")
 

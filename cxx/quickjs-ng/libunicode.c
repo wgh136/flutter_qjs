@@ -31,6 +31,7 @@
 #include "libunicode.h"
 #include "libunicode-table.h"
 
+// note: stored as 4 bit tag, not much room left
 enum {
     RUN_TYPE_U,
     RUN_TYPE_L,
@@ -189,7 +190,7 @@ int lre_case_conv(uint32_t *res, uint32_t c, int conv_type)
     return 1;
 }
 
-static int lre_case_folding_entry(uint32_t c, uint32_t idx, uint32_t v, BOOL is_unicode)
+static int lre_case_folding_entry(uint32_t c, uint32_t idx, uint32_t v, bool is_unicode)
 {
     uint32_t res[LRE_CC_RES_LEN_MAX];
     int len;
@@ -215,7 +216,7 @@ static int lre_case_folding_entry(uint32_t c, uint32_t idx, uint32_t v, BOOL is_
                 c = c - 'a' + 'A';
         } else {
             /* legacy regexp: to upper case if single char >= 128 */
-            len = lre_case_conv_entry(res, c, FALSE, idx, v);
+            len = lre_case_conv_entry(res, c, false, idx, v);
             if (len == 1 && res[0] >= 128)
                 c = res[0];
         }
@@ -224,7 +225,7 @@ static int lre_case_folding_entry(uint32_t c, uint32_t idx, uint32_t v, BOOL is_
 }
 
 /* JS regexp specific rules for case folding */
-int lre_canonicalize(uint32_t c, BOOL is_unicode)
+int lre_canonicalize(uint32_t c, bool is_unicode)
 {
     if (c < 128) {
         /* fast case */
@@ -262,11 +263,7 @@ int lre_canonicalize(uint32_t c, BOOL is_unicode)
 
 static uint32_t get_le24(const uint8_t *ptr)
 {
-#if defined(__x86__) || defined(__x86_64__)
-    return *(uint16_t *)ptr | (ptr[2] << 16);
-#else
     return ptr[0] | (ptr[1] << 8) | (ptr[2] << 16);
-#endif
 }
 
 #define UNICODE_INDEX_BLOCK_LEN 32
@@ -305,7 +302,7 @@ static int get_index_pos(uint32_t *pcode, uint32_t c,
     return (idx_min + 1) * UNICODE_INDEX_BLOCK_LEN + (v >> 21);
 }
 
-static BOOL lre_is_in_table(uint32_t c, const uint8_t *table,
+static bool lre_is_in_table(uint32_t c, const uint8_t *table,
                             const uint8_t *index_table, int index_table_len)
 {
     uint32_t code, b, bit;
@@ -314,7 +311,7 @@ static BOOL lre_is_in_table(uint32_t c, const uint8_t *table,
 
     pos = get_index_pos(&code, c, index_table, index_table_len);
     if (pos < 0)
-        return FALSE; /* outside the table */
+        return false; /* outside the table */
     p = table + pos;
     bit = 0;
     for(;;) {
@@ -340,7 +337,7 @@ static BOOL lre_is_in_table(uint32_t c, const uint8_t *table,
     }
 }
 
-BOOL lre_is_cased(uint32_t c)
+bool lre_is_cased(uint32_t c)
 {
     uint32_t v, code, len;
     int idx, idx_min, idx_max;
@@ -357,7 +354,7 @@ BOOL lre_is_cased(uint32_t c)
         } else if (c >= code + len) {
             idx_min = idx + 1;
         } else {
-            return TRUE;
+            return true;
         }
     }
     return lre_is_in_table(c, unicode_prop_Cased1_table,
@@ -365,7 +362,7 @@ BOOL lre_is_cased(uint32_t c)
                            sizeof(unicode_prop_Cased1_index) / 3);
 }
 
-BOOL lre_is_case_ignorable(uint32_t c)
+bool lre_is_case_ignorable(uint32_t c)
 {
     return lre_is_in_table(c, unicode_prop_Case_Ignorable_table,
                            unicode_prop_Case_Ignorable_index,
@@ -533,21 +530,26 @@ int cr_invert(CharRange *cr)
     return 0;
 }
 
-#ifdef CONFIG_ALL_UNICODE
-
-BOOL lre_is_id_start(uint32_t c)
+bool lre_is_id_start(uint32_t c)
 {
     return lre_is_in_table(c, unicode_prop_ID_Start_table,
                            unicode_prop_ID_Start_index,
                            sizeof(unicode_prop_ID_Start_index) / 3);
 }
 
-BOOL lre_is_id_continue(uint32_t c)
+bool lre_is_id_continue(uint32_t c)
 {
     return lre_is_id_start(c) ||
         lre_is_in_table(c, unicode_prop_ID_Continue1_table,
                         unicode_prop_ID_Continue1_index,
                         sizeof(unicode_prop_ID_Continue1_index) / 3);
+}
+
+bool lre_is_white_space(uint32_t c)
+{
+    return lre_is_in_table(c, unicode_prop_White_Space_table,
+                           unicode_prop_White_Space_index,
+                           sizeof(unicode_prop_White_Space_index) / 3);
 }
 
 #define UNICODE_DECOMP_LEN_MAX 18
@@ -757,7 +759,7 @@ static int unicode_decomp_entry(uint32_t *res, uint32_t c,
 
 /* return the length of the decomposition (length <=
    UNICODE_DECOMP_LEN_MAX) or 0 if no decomposition */
-static int unicode_decomp_char(uint32_t *res, uint32_t c, BOOL is_compat1)
+static int unicode_decomp_char(uint32_t *res, uint32_t c, bool is_compat1)
 {
     uint32_t v, type, is_compat, code, len;
     int idx_min, idx_max, idx;
@@ -897,13 +899,6 @@ static void sort_cc(int *buf, int len)
                 buf[k + 1] = ch1;
                 j++;
             }
-#if 0
-            printf("cc:");
-            for(k = start; k < j; k++) {
-                printf(" %3d", unicode_get_cc(buf[k]));
-            }
-            printf("\n");
-#endif
             i = j;
         }
     }
@@ -958,7 +953,7 @@ int unicode_normalize(uint32_t **pdst, const uint32_t *src, int src_len,
                       void *opaque, DynBufReallocFunc *realloc_func)
 {
     int *buf, buf_len, i, p, starter_pos, cc, last_cc, out_len;
-    BOOL is_compat;
+    bool is_compat;
     DynBuf dbuf_s, *dbuf = &dbuf_s;
 
     is_compat = n_type >> 1;
@@ -1058,14 +1053,14 @@ static int unicode_find_name(const char *name_table, const char *name)
 /* 'cr' must be initialized and empty. Return 0 if OK, -1 if error, -2
    if not found */
 int unicode_script(CharRange *cr,
-                   const char *script_name, BOOL is_ext)
+                   const char *script_name, bool is_ext)
 {
     int script_idx;
     const uint8_t *p, *p_end;
     uint32_t c, c1, b, n, v, v_len, i, type;
-    CharRange cr1_s, *cr1;
-    CharRange cr2_s, *cr2 = &cr2_s;
-    BOOL is_common;
+    CharRange cr1_s = { 0 }, *cr1 = NULL;
+    CharRange cr2_s = { 0 }, *cr2 = &cr2_s;
+    bool is_common;
 
     script_idx = unicode_find_name(unicode_script_name_table, script_name);
     if (script_idx < 0)
@@ -1385,7 +1380,7 @@ static void cr_sort_and_remove_overlap(CharRange *cr)
 
 /* canonicalize a character set using the JS regex case folding rules
    (see lre_canonicalize()) */
-int cr_regexp_canonicalize(CharRange *cr, BOOL is_unicode)
+int cr_regexp_canonicalize(CharRange *cr, bool is_unicode)
 {
     CharRange cr_inter, cr_mask, cr_result, cr_sub;
     uint32_t v, code, len, i, idx, start, end, c, d_start, d_end, d;
@@ -1547,11 +1542,13 @@ static int unicode_prop_ops(CharRange *cr, ...)
         }
     }
  done:
+    va_end(ap);
     assert(stack_len == 1);
     ret = cr_copy(cr, &stack[0]);
     cr_free(&stack[0]);
     return ret;
  fail:
+    va_end(ap);
     for(i = 0; i < stack_len; i++)
         cr_free(&stack[i]);
     return -1;
@@ -1731,42 +1728,6 @@ int unicode_prop(CharRange *cr, const char *prop_name)
                                POP_XOR,
                                POP_END);
         break;
-#if 0
-    case UNICODE_PROP_ID_Start:
-        ret = unicode_prop_ops(cr,
-                               POP_GC, M(Lu) | M(Ll) | M(Lt) | M(Lm) | M(Lo) | M(Nl),
-                               POP_PROP, UNICODE_PROP_Other_ID_Start,
-                               POP_UNION,
-                               POP_PROP, UNICODE_PROP_Pattern_Syntax,
-                               POP_PROP, UNICODE_PROP_Pattern_White_Space,
-                               POP_UNION,
-                               POP_INVERT,
-                               POP_INTER,
-                               POP_END);
-        break;
-    case UNICODE_PROP_ID_Continue:
-        ret = unicode_prop_ops(cr,
-                               POP_GC, M(Lu) | M(Ll) | M(Lt) | M(Lm) | M(Lo) | M(Nl) |
-                               M(Mn) | M(Mc) | M(Nd) | M(Pc),
-                               POP_PROP, UNICODE_PROP_Other_ID_Start,
-                               POP_UNION,
-                               POP_PROP, UNICODE_PROP_Other_ID_Continue,
-                               POP_UNION,
-                               POP_PROP, UNICODE_PROP_Pattern_Syntax,
-                               POP_PROP, UNICODE_PROP_Pattern_White_Space,
-                               POP_UNION,
-                               POP_INVERT,
-                               POP_INTER,
-                               POP_END);
-        break;
-    case UNICODE_PROP_Case_Ignorable:
-        ret = unicode_prop_ops(cr,
-                               POP_GC, M(Mn) | M(Cf) | M(Lm) | M(Sk),
-                               POP_PROP, UNICODE_PROP_Case_Ignorable1,
-                               POP_XOR,
-                               POP_END);
-        break;
-#else
         /* we use the existing tables */
     case UNICODE_PROP_ID_Continue:
         ret = unicode_prop_ops(cr,
@@ -1775,7 +1736,6 @@ int unicode_prop(CharRange *cr, const char *prop_name)
                                POP_XOR,
                                POP_END);
         break;
-#endif
     default:
         if (prop_idx >= countof(unicode_prop_table))
             return -2;
@@ -1784,5 +1744,3 @@ int unicode_prop(CharRange *cr, const char *prop_name)
     }
     return ret;
 }
-
-#endif /* CONFIG_ALL_UNICODE */
