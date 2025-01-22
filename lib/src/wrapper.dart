@@ -146,6 +146,7 @@ dynamic _jsToDart(Pointer<JSContext> ctx, Pointer<JSValue> val,
   final tag = jsValueGetTag(val);
   if (jsTagIsFloat64(tag) != 0) {
     var res = jsToFloat64(ctx, val);
+    if (res.isNaN || res.isInfinite) return res;
     if (res.ceil() == res) return res.toInt();
     return res;
   }
